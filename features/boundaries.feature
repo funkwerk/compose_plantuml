@@ -39,6 +39,27 @@ Feature: Boundaries
       | port      | resulting port |
       | 8000-8099 | 8000..8099     |
 
+  Scenario: Exposed complex port
+    Given a file named "compose.yml" with:
+      """
+      version: "2"
+      services:
+        service:
+          ports:
+            - published: 1
+              target: 2
+      """
+    When I run `bin/compose_plantuml --boundaries compose.yml`
+    Then it should pass with exactly:
+      """
+      skinparam componentStyle uml2
+      cloud system {
+        [service]
+      }
+      [service] --> 1 : 2
+
+      """
+
   Scenario: Volumes
     Given a file named "compose.yml" with:
       """

@@ -208,10 +208,13 @@ class ComposePlantuml:
 
         for component_name, component in components.items():
             for port in component.get('ports', []):
-                port = str(port).replace('-', '..')
-                host, container = (port, None)
-                if ':' in port:
-                    host, container = port.split(':')
+                if type(port) is dict:
+                    host, container = str(port['published']), str(port['target'])
+                else:
+                    port = str(port).replace('-', '..')
+                    host, container = (port, None)
+                    if ':' in port:
+                        host, container = port.split(':')
                 result.append((component_name, host, container))
         return result
 

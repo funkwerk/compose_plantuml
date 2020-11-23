@@ -64,6 +64,33 @@ Feature: Boundaries
 
       """
 
+  Scenario: Volumes with complex syntax
+    Given a file named "compose.yml" with:
+      """
+      version: "2"
+      services:
+        service:
+          volumes:
+            - type: bind
+            - source: service_log
+            - target: /log
+      volumes:
+        service_log: {}
+      """
+    When I run `bin/compose_plantuml --boundaries compose.yml`
+    Then it should pass with exactly:
+      """
+      skinparam componentStyle uml2
+      cloud system {
+        [service]
+      }
+      database service_log {
+        [/log] as volume_1
+      }
+      [service] --> volume_1
+
+      """
+
   Scenario: Filter internal services
     Given a file named "compose.yml" with:
       """

@@ -115,7 +115,7 @@ class ComposePlantuml:
         components = compose if 'version' not in compose else compose.get('services', {})
 
         for _, component in components.items():
-            for volume_name in component.get('volumes', {}):
+            for volume_name in ComposePlantuml.to_volume_strings(component.get('volumes', {})):
                 if volume_name.startswith('{0}:'.format(volume)):
                     return True
         return False
@@ -155,6 +155,8 @@ class ComposePlantuml:
             if 'volumes' not in component:
                 return False
             for volume in component['volumes']:
+                if type(volume) is dict:
+                    return True
                 if volume.startswith('/'):
                     continue
                 if ':' in volume:
@@ -217,9 +219,12 @@ class ComposePlantuml:
     def volumes(compose):
         if 'version' not in compose:
             return []  # TODO: support for version 1
-        volumes = compose.get('volumes', {})
+        volumes = ComposePlantuml.to_volume_names(compose.get('volumes', {})) or []
 
-        return list(volumes.keys())
+        for service in compose.get('services', []):
+            volumes += ComposePlantuml.to_volume_names(compose.get('services', [])[service].get('volumes', {})) or []
+
+        return volumes
 
     @staticmethod
     def volume_usage(compose, volume):
@@ -227,7 +232,7 @@ class ComposePlantuml:
         components = compose if 'version' not in compose else compose.get('services', {})
 
         for component_name, component in components.items():
-            for volume_name in component.get('volumes', {}):
+            for volume_name in ComposePlantuml.to_volume_strings(component.get('volumes', {})):
                 if not volume_name.startswith('{0}:'.format(volume)):
                     continue
                 result.append(volume_name.split(':')[1])
@@ -239,8 +244,16 @@ class ComposePlantuml:
         components = compose if 'version' not in compose else compose.get('services', {})
 
         for component_name, component in components.items():
-            for volume_name in component.get('volumes', {}):
+            for volume_name in ComposePlantuml.to_volume_strings(component.get('volumes', {})):
                 if not volume_name.startswith('{0}:'.format(volume)):
                     continue
                 result.append((component_name, volume_name.split(':')[1]))
         return result
+
+    @staticmethod
+    def to_volume_names(volumes):
+        return [k if type(k) is str else k['source'] for k in volumes]
+
+    @staticmethod
+    def to_volume_strings(volumes):
+        return [k if type(k) is str else k['source'] + ':' + k['target'] for k in volumes]

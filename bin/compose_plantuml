@@ -23,7 +23,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--volume_boundaries', action='store_const', const=True,
-        help='prints the port system boundaries',
+        help='prints the volume system boundaries',
         default=False,
     )
     parser.add_argument(

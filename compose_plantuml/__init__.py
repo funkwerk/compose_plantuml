@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from yaml import load
+from yaml import FullLoader
 
 
 class ComposePlantuml:
@@ -8,7 +9,7 @@ class ComposePlantuml:
         pass
 
     def parse(self, data):
-        return load(data)
+        return load(data, Loader=FullLoader)
 
     def link_graph(self, compose, notes=False):
         result = 'skinparam componentStyle uml2\n'

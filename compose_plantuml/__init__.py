@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from yaml import load
+from yaml import FullLoader
 
 
 class ComposePlantuml:
@@ -8,7 +9,7 @@ class ComposePlantuml:
         pass
 
     def parse(self, data):
-        return load(data)
+        return load(data, Loader=FullLoader)
 
     def link_graph(self, compose, notes=False):
         result = 'skinparam componentStyle uml2\n'
@@ -116,8 +117,13 @@ class ComposePlantuml:
 
         for _, component in components.items():
             for volume_name in component.get('volumes', {}):
-                if volume_name.startswith('{0}:'.format(volume)):
-                    return True
+                if isinstance(volume_name, dict):
+                    if volume_name['target'].startswith('{0}:'.format(volume)):
+                        return True
+                else:
+                    if volume_name.startswith('{0}:'.format(volume)):
+                        return True
+
         return False
 
     @staticmethod
@@ -155,10 +161,17 @@ class ComposePlantuml:
             if 'volumes' not in component:
                 return False
             for volume in component['volumes']:
-                if volume.startswith('/'):
-                    continue
-                if ':' in volume:
-                    return True
+                if isinstance(volume, dict):
+                    if volume['target'].startswith('/'):
+                        continue
+                    if ':' in volume:
+                        return True
+                else:
+                    if volume.startswith('/'):
+                        continue
+                    if ':' in volume:
+                        return True
+
         return False
 
     @staticmethod
@@ -228,8 +241,12 @@ class ComposePlantuml:
 
         for component_name, component in components.items():
             for volume_name in component.get('volumes', {}):
-                if not volume_name.startswith('{0}:'.format(volume)):
-                    continue
+                if isinstance(volume_name, dict):
+                    if not volume_name['target'].startswith('{0}:'.format(volume)):
+                        continue
+                else:
+                    if not volume_name.startswith('{0}:'.format(volume)):
+                        continue
                 result.append(volume_name.split(':')[1])
         return result
 
@@ -240,7 +257,11 @@ class ComposePlantuml:
 
         for component_name, component in components.items():
             for volume_name in component.get('volumes', {}):
-                if not volume_name.startswith('{0}:'.format(volume)):
-                    continue
+                if isinstance(volume_name, dict):
+                    if not volume_name['target'].startswith('{0}:'.format(volume)):
+                        continue
+                else:
+                    if not volume_name.startswith('{0}:'.format(volume)):
+                        continue
                 result.append((component_name, volume_name.split(':')[1]))
         return result

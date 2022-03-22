@@ -2,7 +2,7 @@ from setuptools import setup
 
 
 def readme():
-    with open('README.rst') as file:
+    with open('README.md') as file:
         return file.read()
 
 
